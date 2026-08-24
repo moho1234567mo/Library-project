@@ -1,0 +1,148 @@
+WEEK 20 PROJECT – TASK 2
+DATA INTEGRITY REPORT
+=====================
+
+Dataset reviewed:
+task1_combined_data.csv
+
+Final cleaned dataset:
+task2_cleaned_data.csv
+
+
+1. MISSING VALUES
+-----------------
+What was found:
+The combined dataset contained missing values in several columns.
+
+Where it was:
+The affected columns were:
+- checkout_id: 26 missing values
+- return_date: 91 missing values
+- first_name: 5 missing values
+- last_name: 5 missing values
+- grade: 41 missing values
+- neighborhood: 5 missing values
+- membership_status: 5 missing values
+- join_date: 11 missing values
+- total_checkouts: 5 missing values
+- publication_year: 35 missing values
+
+How big it was:
+There were 229 missing cells across these columns before cleaning.
+
+What was done and why:
+Missing values were handled column by column instead of deleting every row
+containing a missing value.
+
+- checkout_id: the 26 missing IDs were assigned new unique IDs because each
+  checkout record needs an identifier.
+- return_date: missing values were changed to "Not Provided" because the
+  Reading Kickoff source did not supply return dates for those records. This
+  avoids inventing dates.
+- first_name, last_name, neighborhood, membership_status, and join_date:
+  missing values were labelled "Unknown" because the original information was
+  not available and inventing personal/member details would be inappropriate.
+- grade: missing numeric values were filled with the median grade of the
+  cleaned dataset because grade is numeric and the median is less affected by
+  unusually high or low values than the mean.
+- publication_year: missing numeric values were filled with the median
+  publication year because the original year was unavailable and a consistent
+  numeric value was required for the cleaned dataset.
+- total_checkouts: missing values were treated as 0 after invalid member
+  records were removed because this column represents a checkout count.
+
+After cleaning, total missing cells = 0.
+
+
+2. DUPLICATE RECORDS
+--------------------
+What was found:
+There were 8 exact duplicate records in the combined dataset.
+
+Where it was:
+The duplicates were complete duplicate rows across all columns.
+
+How big it was:
+8 rows were identified as exact duplicates.
+
+What was done and why:
+The exact duplicate rows were removed using drop_duplicates(). Only exact
+duplicates were removed. Similar-looking records were not removed because
+different checkouts can represent different real events.
+
+After cleaning, duplicate rows = 0.
+
+
+3. INCONSISTENT TEXT VALUES
+---------------------------
+What was found:
+Text values were written in more than one form.
+
+Neighborhood values before cleaning included:
+HELIOPOLIS, Heliopolis, Maadi, Maadi , NASR CITY, Nasr City, Shubra, Zamalek, zamalek
+
+Membership status values before cleaning included:
+Active, Inactive, active, inactive
+
+Where it was:
+The main inconsistencies were in the neighborhood and membership_status
+columns.
+
+How big it was:
+Neighborhood had inconsistent capitalization/spacing, including variants such
+as "Maadi", "Maadi ", "zamalek", "Zamalek", "NASR CITY", and "HELIOPOLIS".
+Membership status had "Active", "active", "Inactive", and "inactive".
+
+What was done and why:
+Neighborhood values were stripped of extra spaces and converted to title case.
+Membership status values were stripped of extra spaces and converted to
+consistent capitalization. Missing values were labelled "Unknown".
+
+This standardises different spellings of the same real-world value without
+merging genuinely different neighborhoods or membership statuses.
+
+Final neighborhood values:
+Heliopolis, Maadi, Nasr City, Shubra, Zamalek
+
+Final membership status values:
+Active, Inactive
+
+
+4. INVALID MEMBER IDs
+---------------------
+What was found:
+Some checkout records referenced member IDs that do not exist in the
+registered members table.
+
+Where it was:
+The problem was in the member_id column.
+
+How big it was:
+5 records were affected.
+
+Invalid member IDs found:
+1104, 1150, 1201
+
+What was done and why:
+All checkout records with unregistered member IDs were removed from the
+combined dataset. This was applied consistently to every invalid member ID.
+
+The registered members table was not changed. The decision was made because a
+checkout cannot be reliably connected to a real registered member when its
+member_id does not exist in the members table. Keeping those records would
+risk attaching checkout activity to the wrong person.
+
+After cleaning, invalid member IDs remaining = 0.
+
+
+FINAL DATASET CHECK
+-------------------
+Original shape: 417 rows x 19 columns
+Final shape: 404 rows x 19 columns
+
+Missing cells after cleaning: 0
+Exact duplicate rows after cleaning: 0
+Invalid member IDs after cleaning: 0
+
+The cleaned dataset was saved as:
+task2_cleaned_data.csv
