@@ -1,0 +1,412 @@
+WEEK 20 PROJECT – TASK 1
+DATA GATHERING AND COMBINATION
+
+Student Submission – Business Questions and Data Combination
+==============================================================
+
+OVERVIEW
+--------
+This document records the five business questions, the reasoning used to answer
+each question, the SQL results, and the reflection on using a web page as a
+data source. It also records the checks performed on the final combined dataset.
+
+The library database contains:
+- Members: 80 records
+- Books: 32 records
+- Checkouts: 391 records
+
+The Reading Kickoff web page contains 26 checkout records.
+The book catalog JSON file contains 32 book records.
+
+
+QUESTION 1 – HOW MUCH IS EACH MEMBER BORROWING?
+------------------------------------------------
+Business question:
+How many checkouts has each library member made, including members who have
+not borrowed anything?
+
+Reasoning:
+A LEFT JOIN is used from members to checkouts so that every member appears in
+the result, including members with zero checkouts. COUNT(c.checkout_id) counts
+only actual checkout records, so members with no matching checkout receive 0.
+
+SQL:
+SELECT m.member_id, m.first_name, COUNT(c.checkout_id) AS total_checkouts
+FROM members m
+LEFT JOIN checkouts c ON m.member_id = c.member_id
+GROUP BY m.member_id, m.first_name
+ORDER BY m.member_id;
+
+Result:
+ member_id first_name  total_checkouts
+      1001      Salma                1
+      1002      Fares                2
+      1003     Bassel                9
+      1004      Fares                0
+      1005    Youssef                3
+      1006      Layla                1
+      1007     Sherif                3
+      1008       Ziad               19
+      1009     Hassan                1
+      1010       Nour               18
+      1011      Menna                2
+      1012        Ali                0
+      1013       Ziad                2
+      1014     Habiba                1
+      1015      Hamza                3
+      1016       Dina                7
+      1017       Adam                2
+      1018      Ahmed               17
+      1019    Mostafa                3
+      1020       Rana                7
+      1021      Fares                0
+      1022    Youssef                6
+      1023     Hassan                1
+      1024    Youssef               17
+      1025       Hana                0
+      1026       Nada                3
+      1027    Mostafa               18
+      1028     Hassan                3
+      1029       Rana                0
+      1030       Reem               16
+      1031        Ali                1
+      1032       Nada                6
+      1033     Marwan                0
+      1034        Aya               25
+      1035      Karim                1
+      1036       Lina                1
+      1037      Retaj                2
+      1038        Mai                0
+      1039       Nada                2
+      1040       Dina                2
+      1041       Nada                2
+      1042      Fares                0
+      1043       Rana                0
+      1044     Sherif               21
+      1045     Sherif                0
+      1046       Amir                1
+      1047       Sara               16
+      1048    Youssef                0
+      1049      Ahmed                1
+      1050      Fares               11
+      1051      Karim                0
+      1052      Retaj                1
+      1053       Adam                5
+      1054      Retaj                6
+      1055    Mostafa                2
+      1056     Farida                0
+      1057      Ahmed               10
+      1058       Lina                3
+      1059       Lina                7
+      1060      Layla                2
+      1061       Ziad                8
+      1062      Tarek                7
+      1063      Layla                0
+      1064      Fares                0
+      1065       Adam               17
+      1066       Amir                0
+      1067        Aya                3
+      1068      Layla                6
+      1069     Bassel                0
+      1070      Ahmed                3
+      1071       Jana                2
+      1072       Seif               14
+      1073     Yassin                2
+      1074    Mostafa                2
+      1075      Malak                9
+      1076       Dina                7
+      1077       Lina                6
+      1078     Habiba                0
+      1079       Rana               10
+      1080     Bassel                2
+
+
+QUESTION 2 – WHICH BOOKS MATCH THE CHOSEN AUTHOR PATTERN?
+----------------------------------------------------------
+Chosen author pattern:
+"Samir"
+
+Reasoning:
+The books table is searched using LIKE with the pattern '%Samir%'. This finds
+authors whose name contains the chosen text rather than requiring an exact
+match.
+
+SQL:
+SELECT book_id, title, author
+FROM books
+WHERE author LIKE '%Samir%';
+
+Result:
+ book_id                 title      author
+     531 Voices in the Library Samir Zohdy
+     532     The Last Bookmark Samir Zohdy
+
+There are 2 matching books.
+
+
+QUESTION 3 – WHAT ARE THE FIVE MOST POPULAR BOOKS?
+---------------------------------------------------
+Business question:
+Which five books have been checked out the most?
+
+Reasoning:
+The checkouts table is joined to books so the book titles and authors can be
+shown. The checkout records are grouped by book, counted, sorted from highest
+to lowest, and limited to the top five.
+
+SQL:
+SELECT b.title, b.author, COUNT(c.checkout_id) AS checkout_count
+FROM checkouts c
+JOIN books b ON c.book_id = b.book_id
+GROUP BY c.book_id
+ORDER BY checkout_count DESC
+LIMIT 5;
+
+Result:
+                 title         author  checkout_count
+       The Silver Kite  Amina Darwish              57
+ Fossils and Fireflies    Dalia Serry              55
+Circuits for Beginners   Galal Mounir              46
+      Kites Over Cairo Jasmine Wahdan              38
+  Storms and Sailboats  Mahmoud Rafei              25
+
+
+QUESTION 4 – WHO ARE THE TEN MOST ACTIVE READERS?
+--------------------------------------------------
+Business question:
+Which ten members have borrowed the most books?
+
+Reasoning:
+The checkouts table is joined to members so the result can identify each
+reader. The checkout records are grouped by member, counted, ordered from the
+largest count to the smallest, and limited to ten members.
+
+SQL:
+SELECT m.member_id, m.first_name, m.last_name,
+       COUNT(c.checkout_id) AS checkout_count
+FROM checkouts c
+JOIN members m ON c.member_id = m.member_id
+GROUP BY c.member_id
+ORDER BY checkout_count DESC
+LIMIT 10;
+
+Result:
+ member_id first_name last_name  checkout_count
+      1034        Aya     Wahba              25
+      1044     Sherif     Saleh              21
+      1008       Ziad     Saleh              19
+      1027    Mostafa     Fouad              18
+      1010       Nour     Nabil              18
+      1065       Adam     Fahmy              17
+      1024    Youssef    Hegazy              17
+      1018      Ahmed    Shafik              17
+      1047       Sara    Rashad              16
+      1030       Reem     Osman              16
+
+
+QUESTION 5 – WHAT DOES A NEIGHBORHOOD'S OLDER ACTIVITY LOOK LIKE?
+-----------------------------------------------------------------
+Chosen neighborhood:
+Maadi
+
+Reasoning:
+The members table is joined to checkouts so that only checkouts belonging to
+Maadi members are included. The results are ordered from newest to oldest.
+OFFSET 10 removes the ten most recent records, leaving the older activity.
+
+SQL:
+SELECT c.member_id, c.checkout_date, m.neighborhood
+FROM checkouts c
+JOIN members m ON c.member_id = m.member_id
+WHERE m.neighborhood = 'Maadi'
+ORDER BY c.checkout_date DESC
+LIMIT -1 OFFSET 10;
+
+Result:
+ member_id checkout_date neighborhood
+      1003    2025-09-04        Maadi
+      1017    2025-08-25        Maadi
+      1008    2025-08-23        Maadi
+      1003    2025-08-21        Maadi
+      1018    2025-08-19        Maadi
+      1015    2025-08-08        Maadi
+      1018    2025-08-04        Maadi
+      1013    2025-07-27        Maadi
+      1003    2025-07-22        Maadi
+      1009    2025-07-22        Maadi
+      1008    2025-07-20        Maadi
+      1005    2025-07-15        Maadi
+      1016    2025-06-28        Maadi
+      1018    2025-06-26        Maadi
+      1008    2025-06-12        Maadi
+      1003    2025-06-12        Maadi
+      1020    2025-05-25        Maadi
+      1008    2025-05-22        Maadi
+      1022    2025-04-28        Maadi
+      1016    2025-04-28        Maadi
+      1018    2025-04-21        Maadi
+      1008    2025-04-20        Maadi
+      1008    2025-03-22        Maadi
+      1019    2025-03-20        Maadi
+      1006    2025-03-18        Maadi
+      1008    2025-03-15        Maadi
+      1018    2025-03-09        Maadi
+      1005    2025-03-07        Maadi
+      1007    2025-03-05        Maadi
+      1020    2025-02-26        Maadi
+      1016    2025-02-18        Maadi
+      1022    2025-02-17        Maadi
+      1008    2025-02-13        Maadi
+      1020    2025-02-03        Maadi
+      1016    2025-01-23        Maadi
+      1017    2025-01-19        Maadi
+      1018    2025-01-08        Maadi
+      1016    2024-12-21        Maadi
+      1008    2024-12-15        Maadi
+      1020    2024-12-06        Maadi
+      1016    2024-12-03        Maadi
+      1003    2024-12-03        Maadi
+      1011    2024-11-24        Maadi
+      1022    2024-11-22        Maadi
+      1013    2024-11-21        Maadi
+      1018    2024-11-04        Maadi
+      1001    2024-10-24        Maadi
+      1018    2024-10-22        Maadi
+      1007    2024-10-11        Maadi
+      1018    2024-10-07        Maadi
+      1008    2024-09-21        Maadi
+      1018    2024-09-05        Maadi
+      1018    2024-08-06        Maadi
+      1015    2024-08-04        Maadi
+      1020    2024-08-01        Maadi
+      1008    2024-07-28        Maadi
+      1018    2024-07-21        Maadi
+      1007    2024-07-15        Maadi
+      1018    2024-07-01        Maadi
+      1008    2024-06-27        Maadi
+      1002    2024-06-25        Maadi
+      1019    2024-06-20        Maadi
+      1018    2024-06-20        Maadi
+      1019    2024-06-20        Maadi
+      1003    2024-06-19        Maadi
+      1008    2024-06-03        Maadi
+      1008    2024-05-28        Maadi
+      1018    2024-05-15        Maadi
+      1022    2024-04-22        Maadi
+      1016    2024-04-15        Maadi
+      1003    2024-03-25        Maadi
+      1008    2024-03-20        Maadi
+      1022    2024-03-17        Maadi
+      1014    2024-03-06        Maadi
+      1022    2024-02-22        Maadi
+      1002    2024-02-16        Maadi
+      1005    2024-01-26        Maadi
+      1008    2024-01-05        Maadi
+      1008    2024-01-02        Maadi
+
+The query returns 79 records after skipping the ten most recent Maadi
+checkouts.
+
+
+DATA COMBINATION
+----------------
+Stage 1 – Members and Checkouts
+The database checkouts were combined with member information using Python
+pandas. The merge used member_id as the matching key. A separate groupby count
+was created to calculate total_checkouts for every member. The member
+information was merged with this count using a left merge so that members with
+zero database checkouts were still represented.
+
+Stage 1 result:
+391 rows and 12 columns.
+
+Stage 2 – Book Details
+The database books were merged with the JSON book catalog using book_id.
+This adds additional book information such as genre, pages, publication year,
+and publisher. The result was then merged into the Stage 1 checkout data.
+
+Stage 2 result:
+391 rows and 19 columns.
+
+The number of database checkouts remained 391, which confirms
+that adding book information did not add or remove checkout records.
+
+Stage 3 – Reading Kickoff Checkouts
+The Reading Kickoff HTML table was read with pandas.read_html(). Its columns
+were renamed to match the database structure: member_id, book_id, and
+checkout_date. A return_date column was added as a missing value because the
+web page does not provide return dates. A source column was also added to
+identify these records as Reading Kickoff records.
+
+The Reading Kickoff data contains 26 checkout records.
+
+Final combined dataset:
+- Total rows: 417
+- Total columns: 19
+- Database records: 391
+- Reading Kickoff records: 26
+- Output file: task1_combined_data.csv
+
+Final columns:
+checkout_id, member_id, book_id, checkout_date, return_date, first_name, last_name, grade, neighborhood, membership_status, join_date, total_checkouts, title, author, genre, pages, publication_year, publisher, source
+
+Sample of final combined dataset:
+ checkout_id  member_id  book_id checkout_date return_date first_name last_name  grade neighborhood membership_status  join_date  total_checkouts                   title       author      genre  pages  publication_year   publisher   source
+      9263.0       1047      517    2024-10-21  2024-11-07       Sara    Rashad    NaN   Heliopolis          Inactive 2024-06-25             16.0 Shadows on the Corniche  Hani Nagati    Mystery    338            2015.0 Delta House Database
+      9340.0       1072      513    2025-08-24  2025-09-01       Seif      Zaki    9.0      Zamalek            Active 2025-10-21             14.0  Circuits for Beginners Galal Mounir    Science    294            2021.0 Oasis Books Database
+      9231.0       1053      523    2024-02-04  2024-02-16       Adam    Shafik    9.0   Heliopolis            Active 2024-01-03              5.0   Footsteps in the Dust Laila Shokry Historical    276            2018.0 Oasis Books Database
+      9129.0       1032      513    2025-06-21  2025-06-29       Nada      Zaki    7.0    Nasr City            Active 2025-10-19              6.0  Circuits for Beginners Galal Mounir    Science    294            2021.0 Oasis Books Database
+      9370.0       1079      511    2025-11-11  2025-12-03       Rana     Osman    8.0       Shubra            Active 2024-10-27             10.0    Winter in Alexandria Farida Anwar Historical    117            2016.0  Nile Press Database
+
+QUALITY CHECKS
+--------------
+1. Stage 2 contains the same 391 database checkout records as
+   the original checkout table.
+2. The final dataset contains 391 database records + 26
+   Reading Kickoff records = 417 total records.
+3. The JSON catalog contains unique book_id values, so the book merge does not
+   duplicate checkout records.
+4. All 26 Reading Kickoff records have matching book details.
+5. Five Reading Kickoff member IDs do not appear in the database members table,
+   so their member information is left blank rather than being incorrectly
+   assigned to another member. Their checkout records are still retained.
+
+
+REFLECTION – WEB PAGE VS DATABASE
+---------------------------------
+The library database and the Reading Kickoff web page are different types of
+data sources. A database is designed to store structured records and allows
+SQL queries to retrieve specific information accurately and efficiently. In
+this task, the database provided separate tables for members, books, and
+checkouts, with keys such as member_id and book_id that made the relationships
+between the tables clear.
+
+The Reading Kickoff source was an HTML web page designed primarily for people
+to read in a browser. Before the data could be combined with the database
+records, the table had to be extracted from the HTML page and its column names
+and data types had to be standardized. This was different from querying the
+database because the web page did not provide the same structured database
+tables or relationships.
+
+An API would normally be more convenient for a program because it is designed
+to return structured data in a predictable format. A web page, on the other
+hand, may require HTML parsing and additional cleaning before the data can be
+used. This distinction mattered in this project because the Reading Kickoff
+records came from a web page, so pandas.read_html() was needed to turn the
+human-readable table into a DataFrame that could be combined with the database
+and catalog data.
+
+Overall, the project demonstrated why understanding the source of data is
+important. The database was queried directly for the five business questions,
+while Python was used to combine the different sources and standardize their
+structure. Keeping the source information in the final dataset also makes it
+easier to understand where each checkout record came from.
+
+
+CONCLUSION
+----------
+The five business questions were answered directly from the library database.
+The database, JSON catalog, and Reading Kickoff HTML data were then combined
+into one dataset containing 417 records. The final dataset was
+checked for row counts, columns, sample records, and matching keys before being
+saved as task1_combined_data.csv.
